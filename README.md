@@ -2,8 +2,28 @@
 
 Настройка [Hindsight](https://hindsight.vectorize.io/) для работы с русским и английским языками.
 
+![Docker Compose](https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/postgresql-16-4169E1?logo=postgresql&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector-enabled-2F855A)
+![MCP](https://img.shields.io/badge/MCP-enabled-0A66C2)
+
+## Быстрый старт
+
+```bash
+cp .env.example .env
+# отредактируй .env (LLM provider, base URL, API key)
+
+make install
+make start
+curl http://localhost:8888/health
+```
+
+- Contribution guide: `CONTRIBUTING.md`
+- Security policy: `.github/SECURITY.md`
+
 ## Оглавление
 
+- [Быстрый старт](#быстрый-старт)
 - [Обзор архитектуры](#обзор-архитектуры)
 - [Рекомендуемые модели](#рекомендуемые-модели)
 - [Квантование моделей](#квантование-моделей)

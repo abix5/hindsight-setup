@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a reproducible problem in setup or runtime behavior.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+        Please provide enough detail so the issue can be reproduced quickly.
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, CPU/GPU, Docker version, Python version
+      placeholder: macOS 15.3, Apple M3, Docker 27.5, Python 3.11
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List exact commands and actions
+      placeholder: |
+        1. cp .env.example .env
+        2. make install
+        3. make start
+        4. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and errors
+      description: Paste relevant logs from make logs / docker compose logs
+      render: shell
+    validations:
+      required: false

@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest an improvement to setup, docs, or developer workflow.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea.
+        Explain the problem first, then propose the solution.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What is hard, slow, confusing, or missing today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should change and why this is the best option?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Mention options you rejected and why.
+    validations:
+      required: false
+  - type: input
+    id: impact
+    attributes:
+      label: Expected impact
+      description: Performance, reliability, DX, cost, etc.
+      placeholder: Faster setup on macOS, fewer support questions
+    validations:
+      required: false
