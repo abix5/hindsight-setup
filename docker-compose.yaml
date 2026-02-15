@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: hindsight-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: hindsight
+      POSTGRES_PASSWORD: secure_password
+      POSTGRES_DB: hindsight_db
+    command: >
+      postgres -c "shared_preload_libraries=vector"
+    shm_size: 1g
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hindsight -d hindsight_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:

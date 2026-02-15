@@ -1,0 +1,19 @@
+# Secrets
+.env
+
+# Python
+.venv-hs/
+__pycache__/
+
+# HuggingFace model cache
+huggingface/
+
+hindsight-repo/
+
+# Claude Code
+.claude/*.local.md
+.claude/hindsight.json
+
+# Logs
+logs/
+*.log
