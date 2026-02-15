@@ -1,3 +1,4 @@
+# Intentionally postgres-only: API/UI run locally on macOS host.
 services:
   postgres:
     image: pgvector/pgvector:pg16
