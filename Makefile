@@ -1,5 +1,8 @@
 .PHONY: start stop restart status logs logs-api logs-ui health install
 
+-include .env
+VERSION ?= latest
+
 VENV     := .venv-hs
 API      := $(VENV)/bin/hindsight-api
 PIDFILE  := /tmp/hindsight-api.pid
@@ -61,7 +64,11 @@ logs-ui:  ## Tail UI log only
 install:  ## One-time setup: create venv and install hindsight
 	uv python install 3.11
 	uv venv --python 3.11 $(VENV)
-	uv pip install --python $(VENV)/bin/python "hindsight-all==0.4.11"
+	@if [ "$(VERSION)" = "latest" ]; then \
+		uv pip install --python $(VENV)/bin/python "hindsight-all"; \
+	else \
+		uv pip install --python $(VENV)/bin/python "hindsight-all==$(VERSION)"; \
+	fi
 	@echo "Done. Run: make start"
 
 # ── Internal targets ─────────────────────────────────
