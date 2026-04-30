@@ -1,7 +1,8 @@
-.PHONY: start stop restart status logs logs-api logs-ui health install
+.PHONY: start stop restart status logs logs-api logs-ui health install sync-version
 
 -include .env
 VERSION ?= latest
+VERSION_CLEAN := $(patsubst v%,%,$(strip $(VERSION)))
 
 VENV     := .venv-hs
 API      := $(VENV)/bin/hindsight-api
@@ -12,10 +13,14 @@ UI_LOG   := $(LOGDIR)/ui.log
 API_PORT := 8888
 UI_PORT  := 9999
 MAX_LOGS := 3
+VERSION_FILE := $(VENV)/.hindsight-version
+PYTHON_PACKAGE := hindsight-all
+UI_PACKAGE := @vectorize-io/hindsight-control-plane
+UI_PACKAGE_SPEC := $(if $(filter latest,$(VERSION_CLEAN)),$(UI_PACKAGE),$(UI_PACKAGE)@$(VERSION_CLEAN))
 
 # ── Primary commands ─────────────────────────────────
 
-start: _db _rotate _api _ui _wait  ## Start everything (DB + API + UI)
+start: _db _rotate sync-version _api _ui _wait  ## Start everything (DB + API + UI)
 	@echo ""
 	@echo "  API  http://localhost:$(API_PORT)"
 	@echo "  UI   http://localhost:$(UI_PORT)"
@@ -64,12 +69,35 @@ logs-ui:  ## Tail UI log only
 install:  ## One-time setup: create venv and install hindsight
 	uv python install 3.11
 	uv venv --python 3.11 $(VENV)
-	@if [ "$(VERSION)" = "latest" ]; then \
-		uv pip install --python $(VENV)/bin/python "hindsight-all"; \
-	else \
-		uv pip install --python $(VENV)/bin/python "hindsight-all==$(VERSION)"; \
-	fi
+	@$(MAKE) sync-version
 	@echo "Done. Run: make start"
+
+sync-version:  ## Sync installed API and UI versions to VERSION
+	@if [ ! -x "$(VENV)/bin/python" ]; then \
+		echo "Creating virtualenv $(VENV)..."; \
+		uv python install 3.11; \
+		uv venv --python 3.11 $(VENV); \
+	fi
+	@INSTALLED=$$("$(VENV)/bin/python" -c "import importlib.metadata as m; print(m.version('$(PYTHON_PACKAGE)'))" 2>/dev/null || echo "missing"); \
+	RECORDED=$$(cat "$(VERSION_FILE)" 2>/dev/null || echo "missing"); \
+	if [ "$(VERSION_CLEAN)" = "latest" ]; then \
+		if [ "$$INSTALLED" = "missing" ] || [ "$$RECORDED" != "latest" ]; then \
+			echo "Python: syncing $(PYTHON_PACKAGE) to latest"; \
+			uv pip install --python $(VENV)/bin/python --upgrade "$(PYTHON_PACKAGE)"; \
+			echo "latest" > "$(VERSION_FILE)"; \
+		else \
+			echo "Python: $(PYTHON_PACKAGE) already synced to latest policy ($$INSTALLED)"; \
+		fi; \
+	else \
+		if [ "$$INSTALLED" != "$(VERSION_CLEAN)" ] || [ "$$RECORDED" != "$(VERSION_CLEAN)" ]; then \
+			echo "Python: syncing $(PYTHON_PACKAGE) $$INSTALLED -> $(VERSION_CLEAN)"; \
+			uv pip install --python $(VENV)/bin/python "$(PYTHON_PACKAGE)==$(VERSION_CLEAN)"; \
+			echo "$(VERSION_CLEAN)" > "$(VERSION_FILE)"; \
+		else \
+			echo "Python: $(PYTHON_PACKAGE) already at $(VERSION_CLEAN)"; \
+		fi; \
+	fi
+	@echo "UI: using $(UI_PACKAGE_SPEC)"
 
 # ── Internal targets ─────────────────────────────────
 
@@ -111,8 +139,8 @@ _ui:
 	elif ! command -v npx >/dev/null 2>&1; then \
 		echo "UI:  skipped (npx not found — install Node.js)"; \
 	else \
-		echo "UI:  starting (background)..."; \
-		nohup npx -y @vectorize-io/hindsight-control-plane \
+		echo "UI:  starting $(UI_PACKAGE_SPEC) (background)..."; \
+		nohup npx -y $(UI_PACKAGE_SPEC) \
 			--api-url http://localhost:$(API_PORT) --port $(UI_PORT) \
 			> $(UI_LOG) 2>&1 & \
 	fi
